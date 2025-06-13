@@ -143,23 +143,10 @@ def ollama(Class):
 
     return generate.json(model, Class)
 
-# Add an addition tool
-@mcp.tool()
-def add(a: int, b: int) -> int:
-    """Add two numbers"""
-    return a + b
-
-
-# Add a dynamic greeting resource
-@mcp.resource("greeting://{name}")
-def get_greeting(name: str) -> str:
-    """Get a personalized greeting"""
-    return f"Hello, {name}!"
-
 # Generate a home from a home report
-@mcp.resource("home://{home_report}")
+@mcp.tool()
 def generate_home(home_report: str) -> Home:
-    """Generate a home from a home report"""
+    """Generate a home from a home report, Given a long home report, extract relevant information and return a filled home form."""
     try:
         generator = ollama(Home)
         home = generator.generate(home_report)
@@ -168,9 +155,9 @@ def generate_home(home_report: str) -> Home:
         print("Error generating home:", e)
         return Message(success=False, message=str(e))
     
-@mcp.resource("appliances://{appliance_report}")
+@mcp.tool()
 def generate_appliance(appliance_report: str) -> list[Appliance]:
-    """Generate an appliance from a report"""
+    """Extract a list of appliances from a home report. Given a long home report, extract relevant information about appliances and return a list of filled appliance forms."""
     try:
         generator = ollama(list[Appliance])
         appliances = generator.generate(appliance_report)
@@ -179,9 +166,9 @@ def generate_appliance(appliance_report: str) -> list[Appliance]:
         print("Error generating appliances:", e)
         return Message(success=False, message=str(e))
     
-@mcp.resource("sensors://{sensor_report}")
+@mcp.tool()
 def generate_sensor(sensor_report: str) -> list[Sensor]:
-    """Generate a sensor from a report"""
+    """Extract a list of sensors from a home report. Given a long home report, extract relevant information about sensors and return a list of filled sensor forms."""
     try:
         generator = ollama(list[Sensor])
         sensors = generator.generate(sensor_report)

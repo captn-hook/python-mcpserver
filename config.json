@@ -2,7 +2,7 @@
     "mcpServers": {
         "demo": {
             "type": "streamable",
-            "url": "http://127.0.0.1:8000/mcp",
+            "url": "http://host.docker.internal:8000/mcp",
             "transport": "streamable-http"
         }
     }
