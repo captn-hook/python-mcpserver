@@ -4,3 +4,4 @@ outlines[openai]
 python-dotenv
 openai
 mcp[cli]
+uvicorn

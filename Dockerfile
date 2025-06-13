@@ -21,4 +21,5 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE ${PORT:-8000}
+
 CMD ["python", "main.py"]

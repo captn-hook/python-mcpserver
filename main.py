@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from flask import Flask, jsonify, request
 from enum import Enum
 from outlines import models, generate
+import uvicorn
 
 # Load environment variables
 import os
@@ -128,7 +129,7 @@ class Message(BaseModel):
         description="The message content.",
     )
 # Create an MCP server
-mcp = FastMCP(name="demo", json_response=False, stateless_http=False)
+mcp = FastMCP(name="demo")
 
 def ollama(Class):
     try:
@@ -188,9 +189,7 @@ def generate_sensor(sensor_report: str) -> list[Sensor]:
     except Exception as e:
         print("Error generating sensors:", e)
         return Message(success=False, message=str(e))        
-        
-        
+
 if __name__ == "__main__":
-    mcp.run(
-        transport="streamable-http"
-    )
+    http_app = mcp.streamable_http_app()
+    uvicorn.run(http_app, host="127.0.0.1", port=PORT, log_level="debug")
