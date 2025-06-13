@@ -192,4 +192,4 @@ def generate_sensor(sensor_report: str) -> list[Sensor]:
 
 if __name__ == "__main__":
     http_app = mcp.streamable_http_app()
-    uvicorn.run(http_app, host="127.0.0.1", port=PORT, log_level="debug")
+    uvicorn.run(http_app, host="0.0.0.0", port=PORT, log_level="debug")
