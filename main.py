@@ -149,7 +149,7 @@ def generate_home(home_report: str) -> Home:
     """Generate a home from a home report, Given a long home report, extract relevant information and return a filled home form."""
     try:
         generator = ollama(Home)
-        home = generator.generate(home_report)
+        home = generator(home_report)
         return home.model_dump()
     except Exception as e:
         print("Error generating home:", e)
@@ -160,7 +160,7 @@ def generate_appliance(appliance_report: str) -> list[Appliance]:
     """Extract a list of appliances from a home report. Given a long home report, extract relevant information about appliances and return a list of filled appliance forms."""
     try:
         generator = ollama(list[Appliance])
-        appliances = generator.generate(appliance_report)
+        appliances = generator(appliance_report)
         return appliances.model_dump()
     except Exception as e:
         print("Error generating appliances:", e)
@@ -171,7 +171,7 @@ def generate_sensor(sensor_report: str) -> list[Sensor]:
     """Extract a list of sensors from a home report. Given a long home report, extract relevant information about sensors and return a list of filled sensor forms."""
     try:
         generator = ollama(list[Sensor])
-        sensors = generator.generate(sensor_report)
+        sensors = generator(sensor_report)
         return sensors.model_dump()
     except Exception as e:
         print("Error generating sensors:", e)
