@@ -1,0 +1,6 @@
+pydantic
+Flask
+outlines[openai]
+python-dotenv
+openai
+mcp[cli]
