@@ -1,7 +1,8 @@
 pydantic
 Flask
-outlines[openai]
+outlines
 python-dotenv
 openai
 mcp[cli]
 uvicorn
+asyncio

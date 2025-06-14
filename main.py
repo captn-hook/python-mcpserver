@@ -3,8 +3,11 @@ from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, Field
 from flask import Flask, jsonify, request
 from enum import Enum
+from openai import AsyncOpenAI
 from outlines import models, generate
+from outlines.models.openai import OpenAIConfig
 import uvicorn
+import asyncio
 
 # Load environment variables
 import os
@@ -12,6 +15,35 @@ from dotenv import load_dotenv
 load_dotenv()
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 PORT = int(os.getenv("PORT", 8000))
+
+def fill_form(info: str) -> str:
+    return "You are a property manager. Customers \
+    send you inspection reports from which you need to extract \
+    the relevant information to fill out the home form. \
+    Here is the inspection report: {info} \
+    Fill out the home form as completely as possible."
+    
+
+
+
+def fill_home_form(form: str) -> str:
+    return f"You are a property manager. Customers \
+    send you inspection reports from which you need to extract \
+    the relevant information to fill out the home form. \
+    Home forms have information about the home, such as address, \
+    type (e.g., apartment, detached, semi-detached, terraced), \
+    year built, square footage, number of floors, number of bathrooms, etc. \
+    Leave any unspecified fields empty. Here is the inspection report: {form} \
+    Fill out the home form as completely as possible."
+
+def fill_appliance_form(form: str) -> str:
+    return f"You are a property manager. Customers \
+    send you inspection reports from which you need to extract \
+    the relevant information to fill out the appliance form. \
+    Appliance forms have information about appliances in the home, \
+    such as name, serial number, warranty, age, room, and installation date. \
+    Leave any unspecified fields empty. Here is the inspection report: {form} \
+    Fill out the appliance form as completely as possible."
 
 class Appliance(BaseModel):
     name: str = Field(
@@ -135,22 +167,34 @@ def ollama(Class):
     try:
         model = models.openai(
             "gemma3:4b",
-            base_url=OLLAMA_URL + "/v1",
+            base_url="http://localhost:11434/v1",
             api_key='ollama'
         )
     except Exception as e:
-        print("Error loading model:", e)
+        print("Error loading model")
+        raise e
 
-    return generate.json(model, Class)
+    async def generate_async(prompt):
+        return await generate.json(model, Class, prompt)
 
+    def generate_sync(prompt):
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # Use asyncio.run_coroutine_threadsafe if already in an event loop
+            future = asyncio.run_coroutine_threadsafe(generate_async(prompt), loop)
+            return future.result()
+        else:
+            return asyncio.run(generate_async(prompt))
+
+    return generate_sync
 # Generate a home from a home report
 @mcp.tool()
 def generate_home(home_report: str) -> Home:
-    """Generate a filled home form with a home report, Given a long home report, extract relevant information and return a filled home form."""
+    """Generate a filled home form with a home report, Given an entire home report, extract relevant information and return a filled home form."""
     print("Generating home from report:", home_report)
     try:
         generator = ollama(Home)
-        home = generator(home_report)
+        home = generator(fill_home_form(home_report))
         print(home)
         return home.model_dump()
     except Exception as e:
@@ -163,7 +207,7 @@ def generate_appliance(appliance_report: str) -> list[Appliance]:
     print("Generating appliances from report:", appliance_report)
     try:
         generator = ollama(list[Appliance])
-        appliances = generator(appliance_report)
+        appliances = generator(fill_appliance_form(appliance_report))
         print(appliances)
         return appliances.model_dump()
     except Exception as e:
@@ -174,9 +218,11 @@ def generate_appliance(appliance_report: str) -> list[Appliance]:
 def generate_sensor(sensor_report: str) -> list[Sensor]:
     """Extract a list of sensors from a home report. Given a long home report, extract relevant information about sensors and return a list of filled sensor forms."""
     print("Generating sensors from report:", sensor_report)
+    return Message(success=False, message="This tool is not implemented yet. Please try again later.")
+    
     try:
         generator = ollama(list[Sensor])
-        sensors = generator(sensor_report)
+        sensors = generator(fill_sensor_form(sensor_report))
         print(sensors)
         return sensors.model_dump()
     except Exception as e:
